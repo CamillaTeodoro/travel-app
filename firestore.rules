@@ -1,0 +1,44 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // Perfil do usuário: apenas o dono lê e escreve.
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // Quiz: o dono cria e lê os seus; userId do documento é imutável.
+    match /quizzes/{quizId} {
+      allow create: if isOwner(request.resource.data.userId);
+      allow read, update: if isOwner(resource.data.userId);
+      allow delete: if false;
+
+      // Destinos gerados pela IA: somente-leitura para o dono do quiz.
+      // Escrita apenas via Admin SDK (Cloud Function), que ignora as rules.
+      match /destinations/{destinationId} {
+        allow read: if isOwner(get(/databases/$(database)/documents/quizzes/$(quizId)).data.userId);
+        allow write: if false;
+      }
+    }
+
+    // Leads: o dono cria e lê os seus; status é gerenciado pelo backoffice.
+    match /leads/{leadId} {
+      allow create: if isOwner(request.resource.data.userId);
+      allow read: if isOwner(resource.data.userId);
+      allow update, delete: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
