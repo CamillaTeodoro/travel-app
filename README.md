@@ -73,18 +73,48 @@ npm --prefix functions install   # dependências das Cloud Functions
 
 ## Rodando localmente
 
-Em dois terminais:
+### Passo a passo (primeira vez)
+
+```bash
+# 1. Instale as dependências do app (na raiz do projeto)
+npm install
+
+# 2. Instale as dependências das Cloud Functions
+cd functions
+npm install
+cd ..
+
+# 3. Suba o app
+npm start
+```
+
+Pronto — abra **http://localhost:4200** no navegador. Nesta etapa você verá a
+tela placeholder da Etapa 1; as telas reais (Home, Quiz, Destinos, Planos)
+chegam nas próximas etapas.
+
+### E os Emuladores do Firebase?
+
+**Você NÃO precisa deles para ver o app rodando.** Eles só serão necessários
+quando formos testar login, quiz salvo no banco e a função de IA (Etapas 2+).
+
+Quando precisar, abra um **segundo terminal** (deixe o `npm start` rodando no
+primeiro) e rode:
 
 ```bash
 firebase emulators:start
 ```
 
-```bash
-npm start
-```
+| Serviço | Endereço |
+| --- | --- |
+| App Angular | http://localhost:4200 |
+| Painel dos Emuladores | http://localhost:4000 |
+| Auth / Firestore / Functions | portas 9099 / 8080 / 5001 (automático) |
 
-- App: http://localhost:4200
-- Emulator UI: http://localhost:4000 (Auth 9099 · Firestore 8080 · Functions 5001)
+O app em modo dev já está configurado para se conectar sozinho nos emuladores
+(`useEmulators: true`) — não é preciso criar projeto no Firebase nem colocar
+credenciais para desenvolver.
+
+> ⚠️ Os emuladores exigem **Java 11+** instalado (verifique com `java -version`).
 
 ## Testes
 
