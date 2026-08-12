@@ -122,6 +122,17 @@ describe('LoginPage', () => {
     expect(router.navigateByUrl).toHaveBeenCalledWith('/quiz');
   });
 
+  it('sugere ligar os emuladores quando há falha de rede em dev', async () => {
+    auth.signInWithEmail.and.rejectWith({ code: 'auth/network-request-failed' });
+
+    fillForm('ana@exemplo.com', 'secreta1');
+    submitForm();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(element.textContent).toContain('firebase emulators:start');
+  });
+
   it('exibe mensagem amigável quando o login falha', async () => {
     auth.signInWithEmail.and.rejectWith({ code: 'auth/invalid-credential' });
 

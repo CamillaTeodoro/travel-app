@@ -3,6 +3,7 @@ import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angula
 import { Router } from '@angular/router';
 
 import { AuthService, mapAuthError } from '../../core/auth';
+import { environment } from '../../../environments/environment';
 
 type AuthMode = 'login' | 'signup';
 
@@ -67,9 +68,21 @@ export class LoginPage {
       await action();
       await this.router.navigateByUrl(this.returnUrl());
     } catch (error) {
-      this.errorMessage.set(mapAuthError(error));
+      this.errorMessage.set(this.friendlyMessage(error));
     } finally {
       this.busy.set(false);
     }
+  }
+
+  /** Em dev, falha de rede quase sempre significa emuladores desligados. */
+  private friendlyMessage(error: unknown): string {
+    const code =
+      typeof error === 'object' && error !== null && 'code' in error
+        ? String((error as { code: unknown }).code)
+        : '';
+    if (code === 'auth/network-request-failed' && environment.useEmulators) {
+      return 'Não foi possível conectar ao Firebase. Os emuladores estão rodando? Execute "firebase emulators:start" em outro terminal.';
+    }
+    return mapAuthError(error);
   }
 }
