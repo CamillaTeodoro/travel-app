@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Vista aérea de uma praia tropical">
+  <defs>
+    <linearGradient id="water" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0f766e"/>
+      <stop offset=".45" stop-color="#14b8a6"/>
+      <stop offset="1" stop-color="#67e8f9"/>
+    </linearGradient>
+    <linearGradient id="sand" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#fef9c3"/>
+      <stop offset="1" stop-color="#fde68a"/>
+    </linearGradient>
+    <linearGradient id="jungle" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#166534"/>
+      <stop offset="1" stop-color="#15803d"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="400" height="300" fill="url(#water)"/>
+
+  <!-- ondulações da água -->
+  <path d="M0 70 Q 90 55 180 75 T 400 65" fill="none" stroke="#99f6e4" stroke-opacity=".35" stroke-width="6" stroke-linecap="round"/>
+  <path d="M0 120 Q 110 100 210 122 T 400 112" fill="none" stroke="#ccfbf1" stroke-opacity=".25" stroke-width="5" stroke-linecap="round"/>
+
+  <!-- faixa de areia em curva -->
+  <path d="M400 300 L120 300 Q 150 240 230 205 Q 320 168 400 165 Z" fill="url(#sand)"/>
+  <!-- espuma na beira -->
+  <path d="M120 300 Q 150 240 230 205 Q 320 168 400 165" fill="none" stroke="#ffffff" stroke-opacity=".85" stroke-width="7" stroke-linecap="round"/>
+  <path d="M110 300 Q 142 236 224 198 Q 316 160 400 156" fill="none" stroke="#ffffff" stroke-opacity=".35" stroke-width="12" stroke-linecap="round"/>
+
+  <!-- vegetação costeira -->
+  <path d="M400 300 L230 300 Q 265 262 320 245 Q 365 232 400 230 Z" fill="url(#jungle)"/>
+  <g fill="#22c55e" opacity=".85">
+    <circle cx="300" cy="268" r="14"/>
+    <circle cx="330" cy="255" r="17"/>
+    <circle cx="362" cy="248" r="15"/>
+    <circle cx="388" cy="262" r="18"/>
+    <circle cx="268" cy="284" r="12"/>
+  </g>
+
+  <!-- barquinho -->
+  <g transform="translate(84 150) rotate(-12)">
+    <ellipse cx="0" cy="0" rx="16" ry="5" fill="#ffffff"/>
+    <ellipse cx="0" cy="-1" rx="9" ry="2.5" fill="#0ea5e9" opacity=".65"/>
+  </g>
+  <path d="M64 158 Q 76 153 96 156" fill="none" stroke="#ffffff" stroke-opacity=".5" stroke-width="2" stroke-linecap="round"/>
+</svg>
