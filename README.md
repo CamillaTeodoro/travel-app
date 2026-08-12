@@ -1,59 +1,129 @@
-# TravelApp
+# ✈️ TravelQuiz
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.2.27.
+> Descubra o seu próximo **destino ideal**: responda 6 perguntas rápidas e nossa IA
+> encontra o destino perfeito para o seu perfil de viajante.
 
-## Development server
+Web App híbrido/responsivo (PWA-ready) construído com **Angular 19** e backend
+100% serverless no **Firebase** (Auth, Firestore, Cloud Functions e Hosting).
 
-To start a local development server, run:
+## Funcionalidades
 
-```bash
-ng serve
+- 🔐 **Autenticação & Onboarding** — login/cadastro com e-mail/senha, Google e acesso anônimo (Firebase Auth via `@angular/fire`).
+- 🎯 **Quiz Interativo de Perfil** — 6 passos com barra de progresso (orçamento, companhia, ambiente, estilo, duração e época do ano).
+- 🤖 **Recomendações por IA** — Cloud Function `generateRecommendations` gera de 3 a 5 destinos personalizados (nacionais e internacionais) em JSON e persiste no Firestore.
+- 🏝️ **Apresentação de Destinos** — cards com % de match, ranking, nota, tags e CTA de planejamento.
+- 💎 **4 Planos de Serviço** — Gratuito, Essencial, Premium e VIP/Concierge, com captação de lead no Firestore ao selecionar.
+
+## Arquitetura
+
+```
+Angular 19 (Standalone + Signals + OnPush)  ──►  @angular/fire
+   │                                                │
+   ├── Tailwind CSS v4 (tokens @theme)              ├── Firebase Auth
+   ├── PWA (@angular/pwa, ngsw)                     ├── Cloud Firestore (rules restritivas)
+   └── Jasmine/Karma (ChromeHeadless)               └── Cloud Functions v2 (Node 20 + TS)
+                                                         └── generateRecommendations (IA)
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+O plano completo — mapeamento de telas, modelo de dados do Firestore, arquitetura da
+Cloud Function e decisões técnicas — está em [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
-## Code scaffolding
+### Pasta `/layout` — fonte da verdade visual
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+A pasta [`/layout`](layout) contém os prints que guiam TODA a UI. Antes de criar ou
+alterar qualquer componente, o print correspondente deve ser inspecionado
+(skill `layout-inspection` em `.claude/skills/`):
 
-```bash
-ng generate component component-name
-```
+| Print | Rota | Feature |
+| --- | --- | --- |
+| `layout/tela inicial.png` | `/` | Home (hero, chips, CTA do quiz) |
+| `layout/quiz.png` | `/quiz` | Quiz passo a passo com progresso |
+| `layout/resultado quiz.png` | `/resultados` | Cards de destinos recomendados |
+| `layout/planos.png` | `/planos` | 4 planos de serviço + lead |
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+A paleta dos prints está tokenizada em [`src/styles.scss`](src/styles.scss)
+(`@theme`: `brand` teal, `accent` azul, `lime`, `amber`, `surface`) — componentes
+nunca usam cores hardcoded.
 
-```bash
-ng generate --help
-```
+## Requisitos
 
-## Building
+- **Node.js 20+** (projeto validado com 20.17)
+- **npm 8+**
+- **Firebase CLI 13+** — `npm i -g firebase-tools`
+- **Java 11+** (exigido pelos Emuladores do Firebase)
+- Google Chrome (execução dos testes com Karma)
 
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
+## Instalação
 
 ```bash
-ng e2e
+git clone https://github.com/CamillaTeodoro/travel-app.git
+cd travel-app
+npm install
+npm --prefix functions install   # dependências das Cloud Functions
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+### Configuração do Firebase
 
-## Additional Resources
+- **Desenvolvimento**: nada a configurar — `src/environments/environment.development.ts`
+  usa o projeto demo `demo-travelquiz` e conecta automaticamente nos emuladores
+  (`useEmulators: true`).
+- **Produção**: preencha `src/environments/environment.ts` com as credenciais do seu
+  projeto no [console do Firebase](https://console.firebase.google.com) e ajuste o
+  ID em `.firebaserc`.
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+## Rodando localmente
+
+Em dois terminais:
+
+```bash
+firebase emulators:start
+```
+
+```bash
+npm start
+```
+
+- App: http://localhost:4200
+- Emulator UI: http://localhost:4000 (Auth 9099 · Firestore 8080 · Functions 5001)
+
+## Testes
+
+```bash
+npm test -- --watch=false --browsers=ChromeHeadless
+```
+
+- **Unitários**: serviços, utilitários e componentes (Jasmine/Karma).
+- **Integração**: fluxo do quiz, mocks das Cloud Functions e renderização dos planos
+  (adicionados a cada etapa junto da feature).
+- Functions: `npm --prefix functions run build && npm --prefix functions test`.
+
+⚠️ Política do projeto: **nenhum commit é feito com testes falhando** — a suíte
+completa roda antes de todo commit (skill `pre-commit-tests`).
+
+## Estratégia de Branches & PRs
+
+A `main` é protegida — **nunca** recebe commits diretos. O desenvolvimento segue
+etapas rígidas e bloqueantes, cada uma em sua branch criada a partir da `main`
+atualizada:
+
+| Etapa | Branch | Escopo |
+| --- | --- | --- |
+| 1 | `feature/01-setup-arquitetura` | Arquitetura, Firebase config, tooling |
+| 2 | `feature/02-auth-and-layout` | Autenticação + layout base dos prints |
+| 3 | `feature/03-quiz-component` | Quiz interativo |
+| 4 | `feature/04-ai-destinations` | Cloud Function com IA + destinos |
+| 5 | `feature/05-plans-and-leads` | Planos de serviço + leads |
+
+Fluxo: feature branch → commits pequenos em
+[Conventional Commits](https://www.conventionalcommits.org/pt-br/) (`feat:`, `fix:`,
+`test:`, `docs:`, `refactor:`) → PR detalhado para `main` → revisão humana →
+merge → próxima etapa.
+
+## Contribuindo
+
+1. Crie sua branch a partir da `main` atualizada: `git checkout -b feature/minha-feature main`.
+2. Inspecione os prints de `/layout` antes de mexer em UI e use os tokens de `styles.scss`.
+3. Siga Clean Code, SOLID, DRY e a11y; componentes standalone com Signals e `OnPush`.
+4. Rode a suíte de testes e o build antes de cada commit.
+5. Commits no padrão Conventional Commits, pequenos e granulares.
+6. Abra um PR para `main` descrevendo o que foi feito, como testar e as decisões técnicas.
