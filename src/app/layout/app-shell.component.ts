@@ -25,7 +25,7 @@ interface NavItem {
                sm:rounded-[2rem] sm:shadow-2xl sm:min-h-[85dvh]"
       >
         <header class="shrink-0 px-3 pt-3 pb-2 bg-surface/95 backdrop-blur border-b border-slate-100">
-          <nav aria-label="Navegação principal" class="flex items-center gap-1 overflow-x-auto">
+          <nav aria-label="Navegação principal" class="flex flex-wrap items-center gap-1">
             @for (item of navItems; track item.path) {
               <a
                 [routerLink]="item.path"
@@ -72,9 +72,9 @@ export class AppShellComponent {
   protected readonly auth = inject(AuthService);
   private readonly router = inject(Router);
 
+  // O Quiz fica fora da nav de propósito: o acesso é pelo CTA da Home.
   protected readonly navItems: NavItem[] = [
     { label: 'Início', emoji: '🏠', path: '/', exact: true },
-    { label: 'Quiz', emoji: '🎯', path: '/quiz', exact: false },
     { label: 'Destinos', emoji: '🌴', path: '/resultados', exact: false },
     { label: 'Planos', emoji: '💎', path: '/planos', exact: false },
   ];

@@ -25,14 +25,17 @@ describe('AppShellComponent', () => {
     return fixture.nativeElement.querySelector('nav');
   }
 
-  it('exibe as 4 pills de navegação dos prints com suas rotas', () => {
+  it('exibe as pills Início/Destinos/Planos com suas rotas', () => {
     const links = Array.from(nav().querySelectorAll('a'));
     const byLabel = (label: string) => links.find((a) => a.textContent?.includes(label));
 
     expect(byLabel('Início')?.getAttribute('href')).toBe('/');
-    expect(byLabel('Quiz')?.getAttribute('href')).toBe('/quiz');
     expect(byLabel('Destinos')?.getAttribute('href')).toBe('/resultados');
     expect(byLabel('Planos')?.getAttribute('href')).toBe('/planos');
+  });
+
+  it('não exibe o Quiz na nav (acesso é pelo CTA da Home)', () => {
+    expect(nav().textContent).not.toContain('Quiz');
   });
 
   it('mostra "Entrar" quando deslogado', () => {
