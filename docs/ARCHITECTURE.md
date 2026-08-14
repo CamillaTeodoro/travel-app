@@ -169,10 +169,30 @@ Falhas: `status='error'` no quiz + `HttpsError` tipado; retries idempotentes
 | --- | --- | --- | --- |
 | 1 ✅ (atual) | `feature/01-setup-arquitetura` | Workspace Angular+Tailwind+PWA, @angular/fire + emuladores, scaffolding Firebase (rules, functions workspace), modelos de dados, skills, docs, README | App compila, testes verdes, PR aberto |
 | 2 | `feature/02-auth-and-layout` | App-shell fiel aos prints (moldura, nav pills), Home page, Firebase Auth (e-mail/senha, Google, anônimo), guards | Login funcional + Home fiel ao print |
-| 3 | `feature/03-quiz-component` | Quiz de 6 passos com progress bar, Signals + Reactive Forms, persistência em `quizzes` | Fluxo do quiz completo com testes de integração |
+| 3 | `feature/03-quiz-component` | Quiz **adaptativo** de 6 passos com progress bar (Signals), persistência em `quizzes` | Fluxo do quiz completo com testes de integração |
 | 4 | `feature/04-ai-destinations` | Cloud Function `generateRecommendations`, tela de resultados com cards de destino | Recomendações IA de ponta a ponta (emulador + mock) |
 | 5 | `feature/05-plans-and-leads` | Tela dos 4 planos, captação de lead no Firestore | Funil completo quiz→destino→plano→lead |
 
 **Fluxo Git:** nunca commitar na `main`; branch de feature a partir da `main`
 atualizada; testes obrigatórios antes de cada commit; Conventional Commits;
 PR detalhado → revisão humana → merge → próxima etapa.
+
+---
+
+## 7. Quiz Adaptativo (árvore de decisão determinística)
+
+As 6 dimensões coletadas são fixas (o modelo `quizzes/{quizId}.answers` e o
+prompt da IA dependem delas), mas **cada pergunta se adapta às respostas
+anteriores** via variantes com predicado (`src/app/core/quiz/quiz-questions.ts`):
+
+- ordem do fluxo: paisagem → estilo → companhia → orçamento → duração → época;
+- cada nó tem N variantes (`when: (answers) => boolean`) + 1 fallback;
+  `resolveQuestion()` escolhe a primeira variante compatível com o contexto;
+- título, tom e **conjunto de opções** mudam (ex.: quem escolheu neve não vê
+  "verão" na época do ano; casal vê "orçamento de vocês dois");
+- trocar uma resposta anterior **descarta as respostas dos passos seguintes**
+  (foram dadas sob outro contexto) — regra implementada no `QuizService`;
+- tudo local e instantâneo (sem chamadas de rede no meio do quiz); a IA entra
+  apenas na interpretação final (Etapa 4). Uma evolução futura possível é
+  gerar variantes por LLM na Cloud Function mantendo o mesmo contrato
+  `AdaptiveQuizQuestion`.
