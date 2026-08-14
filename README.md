@@ -118,6 +118,14 @@ credenciais para desenvolver.
 > A primeira subida pode demorar 1–2 minutos (download dos binários) — aguarde o
 > quadro "All emulators ready!" aparecer no terminal.
 
+**Erro `EPERM: operation not permitted, stat 'firebase-debug.log'` no `npm start`
+(Windows):** os emuladores mantêm os arquivos `*-debug.log` da raiz travados e o
+compilador do Angular quebra ao encontrá-los no boot. Solução: inicie o
+`npm start` **antes** dos emuladores; se o erro aparecer, pare os emuladores
+(Ctrl+C), apague os `*-debug.log` da raiz, suba o `npm start` e só então os
+emuladores. Garanta também que não há uma segunda instância dos emuladores
+rodando em outro terminal.
+
 **Login com Google em dev:** o botão "Continuar com Google" abre a tela de
 contas falsas do **emulador** (não é o Google real) — clique em "Add new
 account" / "Auto-generate user information" para entrar. O Google verdadeiro
