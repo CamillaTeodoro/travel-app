@@ -1,0 +1,85 @@
+<!-- Hero com foto aérea, badge da marca e título sobre a imagem -->
+<section class="relative">
+  <img
+    src="images/hero-beach.svg"
+    alt=""
+    aria-hidden="true"
+    class="w-full h-80 object-cover"
+  />
+  <div
+    class="absolute inset-0 bg-gradient-to-b from-brand-950/30 via-transparent to-brand-950/70"
+  ></div>
+
+  <p
+    class="absolute top-5 left-1/2 -translate-x-1/2 inline-flex items-center gap-2
+           bg-white/90 backdrop-blur text-brand-900 rounded-pill px-4 py-1.5 text-sm font-extrabold shadow"
+  >
+    <span aria-hidden="true">✈️</span>TravelQuiz
+  </p>
+
+  <div class="absolute bottom-4 left-5 right-5">
+    <p
+      class="inline-flex items-center gap-1.5 bg-brand-950/60 text-lime-300 backdrop-blur
+             rounded-pill px-3 py-1 text-xs font-bold"
+    >
+      <span class="size-1.5 rounded-full bg-lime-400" aria-hidden="true"></span>
+      1.200+ destinos disponíveis
+    </p>
+    <h1 class="mt-3 text-4xl font-extrabold leading-tight text-white">
+      Descubra o seu<br />
+      próximo <span class="text-lime-400">destino ideal</span>
+    </h1>
+  </div>
+</section>
+
+<!-- Descrição, chips e CTAs -->
+<section class="px-5 py-6">
+  <p class="text-ink-muted text-lg leading-relaxed">
+    Responda 6 perguntas rápidas e nossa IA encontra o destino perfeito para o
+    seu perfil de viajante.
+  </p>
+
+  <ul class="mt-5 flex flex-wrap gap-2" aria-label="Vantagens do quiz">
+    @for (chip of featureChips; track chip.label) {
+      <li
+        class="inline-flex items-center gap-1.5 border border-brand-200 bg-brand-50
+               text-brand-800 rounded-pill px-3.5 py-1.5 text-sm font-bold"
+      >
+        <span aria-hidden="true">{{ chip.emoji }}</span>{{ chip.label }}
+      </li>
+    }
+  </ul>
+
+  <a
+    routerLink="/quiz"
+    class="mt-6 flex items-center justify-center gap-2 w-full min-h-14
+           bg-accent-600 hover:bg-accent-700 text-white text-lg font-extrabold
+           rounded-card shadow-lg shadow-accent-600/30 transition-colors
+           focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-600"
+  >
+    Fazer o Quiz de Viagem <span aria-hidden="true">🎯</span>
+  </a>
+
+  <a
+    routerLink="/resultados"
+    class="mt-3 flex items-center justify-center w-full min-h-12
+           bg-brand-50 hover:bg-brand-100 text-brand-800 font-bold
+           rounded-card transition-colors
+           focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-600"
+  >
+    Ver destinos em alta →
+  </a>
+
+  <!-- Prova social -->
+  <div class="mt-6 flex items-center gap-3">
+    <div class="flex -space-x-2" aria-hidden="true">
+      <span class="size-8 rounded-full ring-2 ring-white bg-rose-400"></span>
+      <span class="size-8 rounded-full ring-2 ring-white bg-teal-500"></span>
+      <span class="size-8 rounded-full ring-2 ring-white bg-sky-400"></span>
+      <span class="size-8 rounded-full ring-2 ring-white bg-amber-400"></span>
+    </div>
+    <p class="text-sm text-ink-muted">
+      <strong class="text-ink font-extrabold">48.000+</strong> viajantes satisfeitos
+    </p>
+  </div>
+</section>

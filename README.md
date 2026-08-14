@@ -94,11 +94,11 @@ chegam nas próximas etapas.
 
 ### E os Emuladores do Firebase?
 
-**Você NÃO precisa deles para ver o app rodando.** Eles só serão necessários
-quando formos testar login, quiz salvo no banco e a função de IA (Etapas 2+).
+**Para ver as telas, não precisa deles.** Mas a partir da Etapa 2 o **login
+(e-mail/senha, Google e anônimo) só funciona com os emuladores ligados** — em
+dev o app não toca em nenhum projeto Firebase real.
 
-Quando precisar, abra um **segundo terminal** (deixe o `npm start` rodando no
-primeiro) e rode:
+Abra um **segundo terminal** (deixe o `npm start` rodando no primeiro) e rode:
 
 ```bash
 firebase emulators:start
@@ -115,6 +115,14 @@ O app em modo dev já está configurado para se conectar sozinho nos emuladores
 credenciais para desenvolver.
 
 > ⚠️ Os emuladores exigem **Java 11+** instalado (verifique com `java -version`).
+> A primeira subida pode demorar 1–2 minutos (download dos binários) — aguarde o
+> quadro "All emulators ready!" aparecer no terminal.
+
+**Login com Google em dev:** o botão "Continuar com Google" abre a tela de
+contas falsas do **emulador** (não é o Google real) — clique em "Add new
+account" / "Auto-generate user information" para entrar. O Google verdadeiro
+só é usado em produção, com um projeto Firebase real e o provedor Google
+habilitado no console.
 
 ## Testes
 

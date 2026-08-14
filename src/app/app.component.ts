@@ -1,13 +1,11 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+
+import { AppShellComponent } from './layout/app-shell.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.scss',
+  imports: [AppShellComponent],
+  template: '<app-shell />',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AppComponent {
-  protected readonly title = 'TravelQuiz';
-}
+export class AppComponent {}

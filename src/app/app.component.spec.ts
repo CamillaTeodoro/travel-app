@@ -1,33 +1,34 @@
+import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 
 import { AppComponent } from './app.component';
+import { AuthService } from './core/auth';
 
 describe('AppComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [AppComponent],
-      providers: [provideRouter([])],
+      providers: [
+        provideRouter([]),
+        {
+          provide: AuthService,
+          useValue: { isAuthenticated: signal(false), signOut: jasmine.createSpy() },
+        },
+      ],
     }).compileComponents();
   });
 
   it('deve criar o app', () => {
     const fixture = TestBed.createComponent(AppComponent);
-    const app = fixture.componentInstance;
-    expect(app).toBeTruthy();
+    expect(fixture.componentInstance).toBeTruthy();
   });
 
-  it('deve exibir a marca TravelQuiz', () => {
+  it('renderiza o shell com a navegação principal', () => {
     const fixture = TestBed.createComponent(AppComponent);
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.textContent).toContain('TravelQuiz');
-  });
-
-  it('deve exibir o título com o destaque "destino ideal"', () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    fixture.detectChanges();
-    const h1 = (fixture.nativeElement as HTMLElement).querySelector('h1');
-    expect(h1?.textContent).toContain('destino ideal');
+    expect(compiled.querySelector('nav')).toBeTruthy();
+    expect(compiled.textContent).toContain('Início');
   });
 });

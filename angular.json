@@ -89,6 +89,12 @@
               "zone.js",
               "zone.js/testing"
             ],
+            "fileReplacements": [
+              {
+                "replace": "src/environments/environment.ts",
+                "with": "src/environments/environment.development.ts"
+              }
+            ],
             "tsConfig": "tsconfig.spec.json",
             "inlineStyleLanguage": "scss",
             "assets": [
