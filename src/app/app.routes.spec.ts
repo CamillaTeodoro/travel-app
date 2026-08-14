@@ -6,6 +6,7 @@ import { of } from 'rxjs';
 
 import { routes } from './app.routes';
 import { FirebaseAuthAdapter, UserProfileService } from './core/auth';
+import { QuizRepository } from './core/quiz';
 
 /** Testes de integração do roteamento + guard de autenticação. */
 describe('app.routes (integração)', () => {
@@ -15,6 +16,7 @@ describe('app.routes (integração)', () => {
         provideRouter(routes, withComponentInputBinding()),
         { provide: FirebaseAuthAdapter, useValue: { authState$: of(user) } },
         { provide: UserProfileService, useValue: { ensureProfile: () => Promise.resolve() } },
+        { provide: QuizRepository, useValue: { createQuiz: () => Promise.resolve('quiz-1') } },
       ],
     });
   }
@@ -32,12 +34,12 @@ describe('app.routes (integração)', () => {
     expect(router.url).toBe('/login?returnUrl=%2Fquiz');
   });
 
-  it('usuário autenticado acessa /quiz', async () => {
+  it('usuário autenticado acessa /quiz e vê o primeiro passo', async () => {
     setup({ uid: 'user-1' } as User);
     const harness = await RouterTestingHarness.create('/quiz');
     const router = TestBed.inject(Router);
     expect(router.url).toBe('/quiz');
-    expect(harness.routeNativeElement?.textContent).toContain('Quiz de Viagem');
+    expect(harness.routeNativeElement?.textContent).toContain('Passo 1 de 6');
   });
 
   it('rotas desconhecidas voltam para a Home', async () => {

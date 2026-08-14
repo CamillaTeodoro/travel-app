@@ -17,9 +17,7 @@ export const routes: Routes = [
   {
     path: 'quiz',
     canActivate: [authGuard],
-    loadComponent: () =>
-      import('./shared/coming-soon/coming-soon.page').then((m) => m.ComingSoonPage),
-    data: { title: 'Quiz de Viagem', emoji: '🎯', stage: 3 },
+    loadComponent: () => import('./features/quiz/quiz.page').then((m) => m.QuizPage),
     title: 'Quiz de Viagem — TravelQuiz',
   },
   {
