@@ -39,7 +39,7 @@ describe('app.routes (integração)', () => {
     const harness = await RouterTestingHarness.create('/quiz');
     const router = TestBed.inject(Router);
     expect(router.url).toBe('/quiz');
-    expect(harness.routeNativeElement?.textContent).toContain('Passo 1 de 6');
+    expect(harness.routeNativeElement?.textContent).toContain('Passo 1 de 8');
   });
 
   it('rotas desconhecidas voltam para a Home', async () => {

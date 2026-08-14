@@ -35,7 +35,7 @@ export class QuizService {
   readonly isFirstStep = computed(() => this.stepIndex() === 0);
   readonly isLastStep = computed(() => this.stepIndex() === this.totalSteps - 1);
 
-  /** Percentual exibido no badge (Passo 1 de 6 → 17%, como no print). */
+  /** Percentual exibido no badge de progresso (passo atual / total). */
   readonly progressPercent = computed(() =>
     Math.round((this.currentStep() / this.totalSteps) * 100),
   );

@@ -72,7 +72,8 @@ function budgetOptions(answers: Answers): readonly QuizOption<'budget'>[] {
   return BUDGET_TIERS.map((tier) => ({
     ...tier,
     description: formatBudgetRange(
-      estimateBudgetRange(tier.value, answers.environment, answers.duration),
+      estimateBudgetRange(tier.value, answers),
+      answers.transport !== undefined,
     ),
   }));
 }
@@ -237,6 +238,83 @@ export const QUIZ_FLOW: readonly AdaptiveQuizQuestion[] = [
           { value: 'ate-7-dias', emoji: '🗓️', label: 'Até 7 dias', description: 'Uma semana boa' },
           { value: 'ate-15-dias', emoji: '📆', label: 'Até 15 dias', description: 'Sem pressa' },
           { value: 'mais-de-15-dias', emoji: '🌐', label: 'Mais de 15 dias', description: 'Imersão completa' },
+        ],
+      },
+    ],
+  },
+  {
+    key: 'transport',
+    variants: [
+      {
+        when: (a: Answers) => a.environment === 'neve',
+        emoji: '🛫',
+        title: 'Como você quer chegar até a neve?',
+        options: [
+          { value: 'aviao', emoji: '✈️', label: 'Avião', description: 'Direto para a montanha' },
+          { value: 'trem', emoji: '🚆', label: 'Trem', description: 'Rotas cênicas entre picos' },
+          { value: 'carro-alugado', emoji: '🚙', label: 'Alugar carro', description: 'Liberdade nas estradas de serra' },
+          { value: 'onibus', emoji: '🚌', label: 'Ônibus', description: 'Transfer sem preocupação' },
+          { value: 'carro-proprio', emoji: '🚗', label: 'Carro próprio', description: 'Minha estrada, minhas regras' },
+        ],
+      },
+      {
+        when: (a: Answers) => a.environment === 'campo' || a.environment === 'montanha',
+        emoji: '🛣️',
+        title: 'Como você prefere pegar a estrada?',
+        options: [
+          { value: 'carro-proprio', emoji: '🚗', label: 'Carro próprio', description: 'Paradas no meu ritmo' },
+          { value: 'carro-alugado', emoji: '🚙', label: 'Alugar carro', description: 'Conforto sem desgastar o meu' },
+          { value: 'onibus', emoji: '🚌', label: 'Ônibus', description: 'Ir descansando' },
+          { value: 'aviao', emoji: '✈️', label: 'Avião', description: 'Voar e completar por terra' },
+          { value: 'trem', emoji: '🚆', label: 'Trem', description: 'Paisagem pela janela' },
+        ],
+      },
+      {
+        emoji: '🧳',
+        title: 'Como você prefere chegar ao destino?',
+        options: [
+          { value: 'aviao', emoji: '✈️', label: 'Avião', description: 'Rapidez para ir longe' },
+          { value: 'carro-proprio', emoji: '🚗', label: 'Carro próprio', description: 'Liberdade na estrada' },
+          { value: 'carro-alugado', emoji: '🚙', label: 'Alugar carro', description: 'Mobilidade no destino' },
+          { value: 'onibus', emoji: '🚌', label: 'Ônibus', description: 'Econômico e prático' },
+          { value: 'trem', emoji: '🚆', label: 'Trem', description: 'Viagem cênica' },
+        ],
+      },
+    ],
+  },
+  {
+    key: 'accommodation',
+    variants: [
+      {
+        when: (a: Answers) => a.company === 'familia',
+        emoji: '🏡',
+        title: 'Onde a família vai ficar melhor?',
+        options: [
+          { value: 'casa', emoji: '🏡', label: 'Casa', description: 'Espaço e rotina para as crianças' },
+          { value: 'apartamento', emoji: '🏢', label: 'Apartamento', description: 'Praticidade com cozinha' },
+          { value: 'hotel', emoji: '🏨', label: 'Hotel', description: 'Serviço e estrutura completa' },
+          { value: 'hostel', emoji: '🛏️', label: 'Hostel', description: 'Quarto família econômico' },
+        ],
+      },
+      {
+        when: (a: Answers) => a.company === 'amigos',
+        emoji: '🏠',
+        title: 'Onde a turma vai se hospedar?',
+        options: [
+          { value: 'casa', emoji: '🏡', label: 'Casa', description: 'Todo mundo junto' },
+          { value: 'hostel', emoji: '🛏️', label: 'Hostel', description: 'Barato e cheio de gente nova' },
+          { value: 'apartamento', emoji: '🏢', label: 'Apartamento', description: 'Base prática para o grupo' },
+          { value: 'hotel', emoji: '🏨', label: 'Hotel', description: 'Cada um no seu canto' },
+        ],
+      },
+      {
+        emoji: '🛎️',
+        title: 'Onde você prefere ficar?',
+        options: [
+          { value: 'hotel', emoji: '🏨', label: 'Hotel', description: 'Conforto e serviço' },
+          { value: 'hostel', emoji: '🛏️', label: 'Hostel', description: 'Econômico e social' },
+          { value: 'apartamento', emoji: '🏢', label: 'Apartamento', description: 'Como um local' },
+          { value: 'casa', emoji: '🏡', label: 'Casa', description: 'Espaço e privacidade' },
         ],
       },
     ],

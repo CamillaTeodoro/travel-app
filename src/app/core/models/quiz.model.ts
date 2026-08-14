@@ -17,6 +17,8 @@ export type DurationOption =
   | 'ate-15-dias'
   | 'mais-de-15-dias';
 export type SeasonOption = 'verao' | 'outono' | 'inverno' | 'primavera' | 'flexivel';
+export type TransportOption = 'carro-proprio' | 'carro-alugado' | 'aviao' | 'onibus' | 'trem';
+export type AccommodationOption = 'hotel' | 'hostel' | 'apartamento' | 'casa';
 
 export interface QuizAnswers {
   budget: BudgetOption;
@@ -24,6 +26,8 @@ export interface QuizAnswers {
   environment: EnvironmentOption;
   travelStyle: TravelStyleOption;
   duration: DurationOption;
+  transport: TransportOption;
+  accommodation: AccommodationOption;
   season: SeasonOption;
 }
 

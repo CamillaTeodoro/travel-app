@@ -2,12 +2,14 @@ import { estimateBudgetRange, formatBudgetRange } from './budget-estimates';
 import { QUIZ_FLOW, resolveQuestion } from './quiz-questions';
 
 describe('QUIZ_FLOW (perguntas adaptativas)', () => {
-  it('possui as 6 dimensões do perfil na ordem do fluxo (prazo antes do orçamento)', () => {
+  it('possui as 8 dimensões do perfil na ordem do fluxo (custos antes do orçamento)', () => {
     expect(QUIZ_FLOW.map((q) => q.key)).toEqual([
       'environment',
       'travelStyle',
       'company',
       'duration',
+      'transport',
+      'accommodation',
       'budget',
       'season',
     ]);
@@ -60,32 +62,85 @@ describe('QUIZ_FLOW (perguntas adaptativas)', () => {
   });
 
   it('o título do orçamento se adapta à companhia', () => {
-    expect(resolveQuestion(QUIZ_FLOW[4], { company: 'casal' }).title).toContain('vocês dois');
-    expect(resolveQuestion(QUIZ_FLOW[4], { company: 'familia' }).title).toContain('família');
-    expect(resolveQuestion(QUIZ_FLOW[4], { company: 'amigos' }).title).toContain('turma');
+    expect(resolveQuestion(QUIZ_FLOW[6], { company: 'casal' }).title).toContain('vocês dois');
+    expect(resolveQuestion(QUIZ_FLOW[6], { company: 'familia' }).title).toContain('família');
+    expect(resolveQuestion(QUIZ_FLOW[6], { company: 'amigos' }).title).toContain('turma');
   });
 
-  it('as opções de orçamento mostram valores médios em R$ por pessoa', () => {
-    const budget = resolveQuestion(QUIZ_FLOW[4], {
+  it('o transporte se adapta ao destino e a hospedagem à companhia', () => {
+    expect(resolveQuestion(QUIZ_FLOW[4], { environment: 'neve' }).title).toContain('neve');
+    expect(resolveQuestion(QUIZ_FLOW[4], { environment: 'campo' }).title).toContain('estrada');
+    expect(resolveQuestion(QUIZ_FLOW[5], { company: 'familia' }).title).toContain('família');
+    expect(resolveQuestion(QUIZ_FLOW[5], { company: 'amigos' }).title).toContain('turma');
+  });
+
+  it('o transporte oferece as 5 modalidades', () => {
+    const transport = resolveQuestion(QUIZ_FLOW[4], {});
+    expect(transport.options.map((o) => o.value).sort()).toEqual([
+      'aviao',
+      'carro-alugado',
+      'carro-proprio',
+      'onibus',
+      'trem',
+    ]);
+  });
+
+  it('as opções de orçamento mostram valores médios em R$, já com transporte', () => {
+    const budget = resolveQuestion(QUIZ_FLOW[6], {
       environment: 'praia',
       duration: 'fim-de-semana',
+      transport: 'aviao',
+      accommodation: 'hotel',
     });
     expect(budget.options.length).toBe(4);
     for (const option of budget.options) {
       expect(option.description).withContext(option.value).toContain('R$');
-      expect(option.description).withContext(option.value).toContain('por pessoa');
+      expect(option.description).withContext(option.value).toContain('já com transporte');
     }
   });
 
   it('os valores do orçamento crescem com o prazo e com o custo do destino', () => {
-    const praiaFds = estimateBudgetRange('economico', 'praia', 'fim-de-semana');
-    const praia15 = estimateBudgetRange('economico', 'praia', 'ate-15-dias');
-    const neve15 = estimateBudgetRange('economico', 'neve', 'ate-15-dias');
+    const praiaFds = estimateBudgetRange('economico', {
+      environment: 'praia',
+      duration: 'fim-de-semana',
+    });
+    const praia15 = estimateBudgetRange('economico', {
+      environment: 'praia',
+      duration: 'ate-15-dias',
+    });
+    const neve15 = estimateBudgetRange('economico', {
+      environment: 'neve',
+      duration: 'ate-15-dias',
+    });
 
     expect(praia15.min).toBeGreaterThan(praiaFds.min);
     expect(neve15.min).toBeGreaterThan(praia15.min);
     // econômico de 15 dias na neve custa mais que um fim de semana econômico inteiro na praia
     expect(neve15.min).toBeGreaterThan(praiaFds.max);
+  });
+
+  it('avião encarece mais que ônibus e hostel barateia em relação a hotel', () => {
+    const base = { environment: 'praia', duration: 'ate-7-dias' } as const;
+    const aviao = estimateBudgetRange('moderado', { ...base, transport: 'aviao' });
+    const onibus = estimateBudgetRange('moderado', { ...base, transport: 'onibus' });
+    expect(aviao.min).toBeGreaterThan(onibus.min);
+
+    const hotel = estimateBudgetRange('moderado', { ...base, accommodation: 'hotel' });
+    const hostel = estimateBudgetRange('moderado', { ...base, accommodation: 'hostel' });
+    expect(hostel.max).toBeLessThan(hotel.max);
+  });
+
+  it('o aluguel de carro soma diárias ao custo conforme o prazo', () => {
+    const curto = estimateBudgetRange('moderado', {
+      environment: 'praia',
+      duration: 'fim-de-semana',
+      transport: 'carro-alugado',
+    });
+    const semCarro = estimateBudgetRange('moderado', {
+      environment: 'praia',
+      duration: 'fim-de-semana',
+    });
+    expect(curto.min).toBeGreaterThan(semCarro.min);
   });
 
   it('formata a faixa em BRL legível', () => {
@@ -97,13 +152,13 @@ describe('QUIZ_FLOW (perguntas adaptativas)', () => {
   });
 
   it('quem escolheu neve não vê a opção verão na época do ano', () => {
-    const season = resolveQuestion(QUIZ_FLOW[5], { environment: 'neve' });
+    const season = resolveQuestion(QUIZ_FLOW[7], { environment: 'neve' });
     expect(season.options.map((o) => o.value)).not.toContain('verao');
     expect(season.options.map((o) => o.value)).toContain('inverno');
   });
 
   it('quem escolheu praia vê o verão como alta estação', () => {
-    const season = resolveQuestion(QUIZ_FLOW[5], { environment: 'praia' });
+    const season = resolveQuestion(QUIZ_FLOW[7], { environment: 'praia' });
     const verao = season.options.find((o) => o.value === 'verao');
     expect(verao?.description).toContain('Alta estação');
   });

@@ -1,6 +1,6 @@
 # ✈️ TravelQuiz
 
-> Descubra o seu próximo **destino ideal**: responda 6 perguntas rápidas e nossa IA
+> Descubra o seu próximo **destino ideal**: responda 8 perguntas rápidas e nossa IA
 > encontra o destino perfeito para o seu perfil de viajante.
 
 Web App híbrido/responsivo (PWA-ready) construído com **Angular 19** e backend
@@ -9,7 +9,7 @@ Web App híbrido/responsivo (PWA-ready) construído com **Angular 19** e backend
 ## Funcionalidades
 
 - 🔐 **Autenticação & Onboarding** — login/cadastro com e-mail/senha, Google e acesso anônimo (Firebase Auth via `@angular/fire`).
-- 🎯 **Quiz Interativo de Perfil** — 6 passos com barra de progresso (orçamento, companhia, ambiente, estilo, duração e época do ano).
+- 🎯 **Quiz Interativo de Perfil** — 8 passos adaptativos com barra de progresso (ambiente, estilo, companhia, prazo, transporte, hospedagem, orçamento com valores médios e época do ano).
 - 🤖 **Recomendações por IA** — Cloud Function `generateRecommendations` gera de 3 a 5 destinos personalizados (nacionais e internacionais) em JSON e persiste no Firestore.
 - 🏝️ **Apresentação de Destinos** — cards com % de match, ranking, nota, tags e CTA de planejamento.
 - 💎 **4 Planos de Serviço** — Gratuito, Essencial, Premium e VIP/Concierge, com captação de lead no Firestore ao selecionar.

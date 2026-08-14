@@ -54,9 +54,9 @@ describe('QuizPage', () => {
     fixture.detectChanges();
   }
 
-  it('exibe o passo 1 com 17%, a pergunta do print e Avançar desabilitado', () => {
-    expect(element.textContent).toContain('Passo 1 de 6');
-    expect(element.textContent).toContain('17%');
+  it('exibe o passo 1 com 13%, a pergunta do print e Avançar desabilitado', () => {
+    expect(element.textContent).toContain('Passo 1 de 8');
+    expect(element.textContent).toContain('13%');
     expect(element.textContent).toContain('Qual tipo de paisagem te faz mais feliz?');
     expect(mainButton().disabled).toBeTrue();
   });
@@ -70,7 +70,7 @@ describe('QuizPage', () => {
 
   it('avança para o passo 2 e volta preservando a seleção', () => {
     completeStep();
-    expect(element.textContent).toContain('Passo 2 de 6');
+    expect(element.textContent).toContain('Passo 2 de 8');
 
     const voltar = Array.from(element.querySelectorAll('button')).find((b) =>
       b.textContent?.includes('← Voltar'),
@@ -78,7 +78,7 @@ describe('QuizPage', () => {
     voltar.click();
     fixture.detectChanges();
 
-    expect(element.textContent).toContain('Passo 1 de 6');
+    expect(element.textContent).toContain('Passo 1 de 8');
     expect(element.querySelector('[role="radio"][aria-checked="true"]')).toBeTruthy();
   });
 
@@ -90,13 +90,13 @@ describe('QuizPage', () => {
     expect(router.navigateByUrl).toHaveBeenCalledWith('/');
   });
 
-  it('completa os 6 passos, salva o quiz e navega para os resultados', async () => {
+  it('completa os 8 passos, salva o quiz e navega para os resultados', async () => {
     repository.createQuiz.and.resolveTo('quiz-123');
 
-    for (let step = 0; step < 5; step++) {
+    for (let step = 0; step < 7; step++) {
       completeStep();
     }
-    expect(element.textContent).toContain('Passo 6 de 6');
+    expect(element.textContent).toContain('Passo 8 de 8');
     expect(mainButton().textContent).toContain('Ver meus destinos');
 
     completeStep();
@@ -111,7 +111,7 @@ describe('QuizPage', () => {
   it('exibe erro amigável quando salvar falha', async () => {
     repository.createQuiz.and.rejectWith(new Error('offline'));
 
-    for (let step = 0; step < 5; step++) {
+    for (let step = 0; step < 7; step++) {
       completeStep();
     }
     completeStep();

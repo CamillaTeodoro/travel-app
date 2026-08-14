@@ -29,10 +29,10 @@ describe('QuizService', () => {
     service.selectAnswer(service.currentQuestion().options[0].value);
   }
 
-  it('inicia no passo 1 com 17% de progresso (como no print)', () => {
+  it('inicia no passo 1 de 8 com 13% de progresso', () => {
     expect(service.currentStep()).toBe(1);
-    expect(service.totalSteps).toBe(6);
-    expect(service.progressPercent()).toBe(17);
+    expect(service.totalSteps).toBe(8);
+    expect(service.progressPercent()).toBe(13);
     expect(service.isFirstStep()).toBeTrue();
     expect(service.isLastStep()).toBeFalse();
   });
@@ -64,13 +64,13 @@ describe('QuizService', () => {
       answerCurrent();
       service.next();
     }
-    expect(service.currentStep()).toBe(6);
+    expect(service.currentStep()).toBe(service.totalSteps);
     expect(service.isLastStep()).toBeTrue();
     expect(service.progressPercent()).toBe(100);
 
     answerCurrent();
     service.next();
-    expect(service.currentStep()).toBe(6);
+    expect(service.currentStep()).toBe(service.totalSteps);
   });
 
   it('adapta a próxima pergunta à resposta anterior', () => {
@@ -158,11 +158,13 @@ describe('QuizService', () => {
     const [userId, answers] = repository.createQuiz.calls.mostRecent().args;
     expect(userId).toBe('user-1');
     expect(Object.keys(answers).sort()).toEqual([
+      'accommodation',
       'budget',
       'company',
       'duration',
       'environment',
       'season',
+      'transport',
       'travelStyle',
     ]);
   });
