@@ -24,8 +24,8 @@ describe('HomePage', () => {
     expect(h1?.textContent).toContain('destino ideal');
   });
 
-  it('exibe a descrição do quiz de 6 perguntas', () => {
-    expect(element.textContent).toContain('Responda 6 perguntas rápidas');
+  it('exibe a descrição do quiz de 8 perguntas', () => {
+    expect(element.textContent).toContain('Responda 8 perguntas rápidas');
   });
 
   it('exibe os 3 chips de vantagens dos prints', () => {

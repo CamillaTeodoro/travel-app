@@ -1,6 +1,6 @@
 # ✈️ TravelQuiz
 
-> Descubra o seu próximo **destino ideal**: responda 6 perguntas rápidas e nossa IA
+> Descubra o seu próximo **destino ideal**: responda 8 perguntas rápidas e nossa IA
 > encontra o destino perfeito para o seu perfil de viajante.
 
 Web App híbrido/responsivo (PWA-ready) construído com **Angular 19** e backend
@@ -9,7 +9,7 @@ Web App híbrido/responsivo (PWA-ready) construído com **Angular 19** e backend
 ## Funcionalidades
 
 - 🔐 **Autenticação & Onboarding** — login/cadastro com e-mail/senha, Google e acesso anônimo (Firebase Auth via `@angular/fire`).
-- 🎯 **Quiz Interativo de Perfil** — 6 passos com barra de progresso (orçamento, companhia, ambiente, estilo, duração e época do ano).
+- 🎯 **Quiz Interativo de Perfil** — 8 passos adaptativos com barra de progresso (ambiente, estilo, companhia, prazo, transporte, hospedagem, orçamento com valores médios e época do ano).
 - 🤖 **Recomendações por IA** — Cloud Function `generateRecommendations` gera de 3 a 5 destinos personalizados (nacionais e internacionais) em JSON e persiste no Firestore.
 - 🏝️ **Apresentação de Destinos** — cards com % de match, ranking, nota, tags e CTA de planejamento.
 - 💎 **4 Planos de Serviço** — Gratuito, Essencial, Premium e VIP/Concierge, com captação de lead no Firestore ao selecionar.
@@ -73,36 +73,34 @@ npm --prefix functions install   # dependências das Cloud Functions
 
 ## Rodando localmente
 
-### Passo a passo (primeira vez)
+O fluxo de desenvolvimento usa **dois terminais**, sempre nesta ordem:
+
+### Terminal 1 — App Angular (primeiro!)
 
 ```bash
-# 1. Instale as dependências do app (na raiz do projeto)
-npm install
-
-# 2. Instale as dependências das Cloud Functions
-cd functions
-npm install
-cd ..
-
-# 3. Suba o app
 npm start
 ```
 
-Pronto — abra **http://localhost:4200** no navegador. Nesta etapa você verá a
-tela placeholder da Etapa 1; as telas reais (Home, Quiz, Destinos, Planos)
-chegam nas próximas etapas.
+Aguarde o bundle compilar e abra **http://localhost:4200**.
 
-### E os Emuladores do Firebase?
-
-**Para ver as telas, não precisa deles.** Mas a partir da Etapa 2 o **login
-(e-mail/senha, Google e anônimo) só funciona com os emuladores ligados** — em
-dev o app não toca em nenhum projeto Firebase real.
-
-Abra um **segundo terminal** (deixe o `npm start` rodando no primeiro) e rode:
+### Terminal 2 — Emuladores do Firebase (depois)
 
 ```bash
 firebase emulators:start
 ```
+
+Aguarde o quadro **"All emulators ready!"**. A partir da Etapa 2 o **login
+(e-mail/senha, Google e anônimo) e o salvamento do quiz só funcionam com os
+emuladores ligados** — em dev o app não toca em nenhum projeto Firebase real
+(`useEmulators: true` conecta tudo automaticamente, sem credenciais).
+
+> ⚠️ **A ordem importa (Windows):** os emuladores mantêm os arquivos
+> `*-debug.log` da raiz travados; se o `npm start` subir depois deles, o
+> compilador do Angular pode falhar com
+> `EPERM: operation not permitted, stat 'firebase-debug.log'`.
+> Se acontecer: pare os emuladores (Ctrl+C), apague os `*-debug.log` da raiz,
+> suba o `npm start` e só então os emuladores. Garanta também que não existe
+> uma segunda instância dos emuladores em outro terminal.
 
 | Serviço | Endereço |
 | --- | --- |
@@ -110,13 +108,19 @@ firebase emulators:start
 | Painel dos Emuladores | http://localhost:4000 |
 | Auth / Firestore / Functions | portas 9099 / 8080 / 5001 (automático) |
 
-O app em modo dev já está configurado para se conectar sozinho nos emuladores
-(`useEmulators: true`) — não é preciso criar projeto no Firebase nem colocar
-credenciais para desenvolver.
-
 > ⚠️ Os emuladores exigem **Java 11+** instalado (verifique com `java -version`).
-> A primeira subida pode demorar 1–2 minutos (download dos binários) — aguarde o
-> quadro "All emulators ready!" aparecer no terminal.
+> A primeira subida pode demorar 1–2 minutos (download dos binários).
+
+### Build de produção
+
+```bash
+npm run build                      # app Angular → dist/travel-app/browser
+npm --prefix functions run build   # Cloud Functions → functions/lib
+```
+
+O deploy (quando houver um projeto Firebase real configurado) é feito com
+`firebase deploy` — o hosting já aponta para `dist/travel-app/browser` e o
+predeploy compila as functions automaticamente.
 
 **Login com Google em dev:** o botão "Continuar com Google" abre a tela de
 contas falsas do **emulador** (não é o Google real) — clique em "Add new

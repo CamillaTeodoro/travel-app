@@ -7,7 +7,7 @@
 
 ## 1. Visão Geral
 
-O app mapeia o perfil do viajante através de um quiz interativo de 6 passos e usa uma
+O app mapeia o perfil do viajante através de um quiz adaptativo de 8 passos e usa uma
 Cloud Function com IA (Claude / GPT) para sugerir de 3 a 5 destinos personalizados.
 Em seguida o usuário escolhe um dos 4 planos de serviço de planejamento, gerando um
 lead no Firestore.
@@ -103,6 +103,8 @@ quizzes/{quizId}
     environment: 'praia' | 'montanha' | 'cidade' | 'campo' | 'neve' | 'cidade-historica'
     travelStyle: 'relaxamento' | 'aventura' | 'gastronomia' | 'cultura'
     duration:    'fim-de-semana' | 'ate-7-dias' | 'ate-15-dias' | 'mais-de-15-dias'
+    transport:   'carro-proprio' | 'carro-alugado' | 'aviao' | 'onibus' | 'trem'
+    accommodation: 'hotel' | 'hostel' | 'apartamento' | 'casa'
     season:      'verao' | 'outono' | 'inverno' | 'primavera' | 'flexivel'
   }
   status: 'pending' | 'processing' | 'completed' | 'error'
@@ -169,10 +171,41 @@ Falhas: `status='error'` no quiz + `HttpsError` tipado; retries idempotentes
 | --- | --- | --- | --- |
 | 1 ✅ (atual) | `feature/01-setup-arquitetura` | Workspace Angular+Tailwind+PWA, @angular/fire + emuladores, scaffolding Firebase (rules, functions workspace), modelos de dados, skills, docs, README | App compila, testes verdes, PR aberto |
 | 2 | `feature/02-auth-and-layout` | App-shell fiel aos prints (moldura, nav pills), Home page, Firebase Auth (e-mail/senha, Google, anônimo), guards | Login funcional + Home fiel ao print |
-| 3 | `feature/03-quiz-component` | Quiz de 6 passos com progress bar, Signals + Reactive Forms, persistência em `quizzes` | Fluxo do quiz completo com testes de integração |
+| 3 | `feature/03-quiz-component` | Quiz **adaptativo** de 8 passos com progress bar (Signals), persistência em `quizzes` | Fluxo do quiz completo com testes de integração |
 | 4 | `feature/04-ai-destinations` | Cloud Function `generateRecommendations`, tela de resultados com cards de destino | Recomendações IA de ponta a ponta (emulador + mock) |
 | 5 | `feature/05-plans-and-leads` | Tela dos 4 planos, captação de lead no Firestore | Funil completo quiz→destino→plano→lead |
 
 **Fluxo Git:** nunca commitar na `main`; branch de feature a partir da `main`
 atualizada; testes obrigatórios antes de cada commit; Conventional Commits;
 PR detalhado → revisão humana → merge → próxima etapa.
+
+---
+
+## 7. Quiz Adaptativo (árvore de decisão determinística)
+
+As 6 dimensões coletadas são fixas (o modelo `quizzes/{quizId}.answers` e o
+prompt da IA dependem delas), mas **cada pergunta se adapta às respostas
+anteriores** via variantes com predicado (`src/app/core/quiz/quiz-questions.ts`):
+
+- ordem do fluxo: paisagem → estilo → companhia → **prazo → transporte →
+  hospedagem → orçamento** → época (tudo que influencia custo vem antes do
+  orçamento, que é calculado a partir dessas respostas);
+- cada nó tem N variantes (`when: (answers) => boolean`) + 1 fallback;
+  `resolveQuestion()` escolhe a primeira variante compatível com o contexto;
+  `options` pode ser função do contexto para conteúdo calculado;
+- título, tom e **conjunto de opções** mudam (ex.: quem escolheu neve não vê
+  "verão" na época do ano; casal vê "orçamento de vocês dois");
+- **as opções de orçamento exibem o custo total médio por pessoa, já com
+  transporte** (`budget-estimates.ts`): custo diário da faixa × fator do
+  destino (neve 1,8× · cidade/montanha 1,1× · campo 0,9×) × fator da
+  hospedagem (hostel 0,65× · apartamento 0,85× · casa 1× · hotel 1,15×) ×
+  dias do prazo, somado ao custo do transporte (parcela fixa por modal +
+  diárias no aluguel de carro, escalado pelo fator do destino como proxy de
+  distância) — transporte e hospedagem também alimentam o prompt da IA na
+  Etapa 4 (custo de passagens, tipo de estadia);
+- trocar uma resposta anterior **descarta as respostas dos passos seguintes**
+  (foram dadas sob outro contexto) — regra implementada no `QuizService`;
+- tudo local e instantâneo (sem chamadas de rede no meio do quiz); a IA entra
+  apenas na interpretação final (Etapa 4). Uma evolução futura possível é
+  gerar variantes por LLM na Cloud Function mantendo o mesmo contrato
+  `AdaptiveQuizQuestion`.

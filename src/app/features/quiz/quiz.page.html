@@ -1,0 +1,123 @@
+<section class="px-5 py-5 flex flex-col min-h-full">
+  <!-- Cabeçalho: voltar, passo e badge de progresso -->
+  <header class="flex items-center gap-3">
+    <button
+      type="button"
+      (click)="back()"
+      aria-label="Voltar"
+      class="size-10 shrink-0 rounded-full bg-brand-50 text-brand-800 font-extrabold
+             inline-flex items-center justify-center hover:bg-brand-100 transition-colors
+             focus-visible:outline-2 focus-visible:outline-accent-600"
+    >
+      ←
+    </button>
+    <p class="flex-1 text-center font-extrabold text-ink">
+      Passo {{ quiz.currentStep() }} de {{ quiz.totalSteps }}
+    </p>
+    <p
+      class="size-10 shrink-0 rounded-full bg-lime-300/40 text-brand-900 text-xs font-extrabold
+             inline-flex items-center justify-center"
+      aria-label="Progresso do quiz"
+    >
+      {{ quiz.progressPercent() }}%
+    </p>
+  </header>
+
+  <!-- Barra de progresso + dots -->
+  <div
+    class="mt-4 h-1.5 rounded-pill bg-brand-100 overflow-hidden"
+    role="progressbar"
+    aria-label="Progresso do quiz"
+    [attr.aria-valuenow]="quiz.currentStep()"
+    aria-valuemin="1"
+    [attr.aria-valuemax]="quiz.totalSteps"
+  >
+    <div
+      class="h-full rounded-pill bg-brand-500 transition-all duration-300"
+      [style.width.%]="quiz.progressPercent()"
+    ></div>
+  </div>
+  <div class="mt-2 flex justify-center gap-1.5" aria-hidden="true">
+    @for (question of quiz.questions; track question.key; let i = $index) {
+      <span
+        class="size-1.5 rounded-full transition-colors"
+        [class]="i < quiz.currentStep() ? 'bg-brand-500' : 'bg-slate-300'"
+      ></span>
+    }
+  </div>
+
+  <!-- Card da pergunta -->
+  <div class="mt-5 bg-surface-muted rounded-card p-5 shadow-sm">
+    <span class="text-4xl" aria-hidden="true">{{ quiz.currentQuestion().emoji }}</span>
+    <h1 class="mt-3 text-2xl font-extrabold text-ink leading-snug">
+      {{ quiz.currentQuestion().title }}
+    </h1>
+  </div>
+
+  <!-- Opções -->
+  <div
+    class="mt-4 grid grid-cols-2 gap-3"
+    role="radiogroup"
+    [attr.aria-label]="quiz.currentQuestion().title"
+  >
+    @for (option of quiz.currentQuestion().options; track option.value) {
+      <button
+        type="button"
+        role="radio"
+        [attr.aria-checked]="quiz.currentAnswer() === option.value"
+        (click)="select(option.value)"
+        class="text-left bg-surface rounded-card border-2 p-4 transition-all
+               focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-600"
+        [class]="
+          quiz.currentAnswer() === option.value
+            ? 'border-brand-500 bg-brand-50 shadow-md'
+            : 'border-slate-100 shadow-sm hover:border-brand-200'
+        "
+      >
+        <span class="text-2xl" aria-hidden="true">{{ option.emoji }}</span>
+        <span class="mt-2 block font-extrabold text-ink">{{ option.label }}</span>
+        <span class="mt-0.5 block text-sm text-ink-muted">{{ option.description }}</span>
+      </button>
+    }
+  </div>
+
+  @if (errorMessage(); as message) {
+    <p
+      class="mt-4 rounded-card bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 text-sm font-medium"
+      role="alert"
+    >
+      {{ message }}
+    </p>
+  }
+
+  <!-- Ações -->
+  <div class="mt-auto pt-6 space-y-3">
+    <button
+      type="button"
+      (click)="advance()"
+      [disabled]="!quiz.canAdvance() || submitting()"
+      class="w-full min-h-14 rounded-card text-lg font-extrabold transition-colors
+             focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-600
+             disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed
+             bg-accent-600 hover:bg-accent-700 text-white shadow-lg shadow-accent-600/20"
+    >
+      @if (submitting()) {
+        Salvando…
+      } @else if (quiz.isLastStep()) {
+        Ver meus destinos ✨
+      } @else {
+        Avançar →
+      }
+    </button>
+    <button
+      type="button"
+      (click)="back()"
+      [disabled]="submitting()"
+      class="w-full min-h-12 rounded-card bg-surface-muted hover:bg-brand-50 text-ink-muted
+             font-bold transition-colors disabled:opacity-60
+             focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-600"
+    >
+      ← Voltar
+    </button>
+  </div>
+</section>
