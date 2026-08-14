@@ -185,11 +185,18 @@ As 6 dimensões coletadas são fixas (o modelo `quizzes/{quizId}.answers` e o
 prompt da IA dependem delas), mas **cada pergunta se adapta às respostas
 anteriores** via variantes com predicado (`src/app/core/quiz/quiz-questions.ts`):
 
-- ordem do fluxo: paisagem → estilo → companhia → orçamento → duração → época;
+- ordem do fluxo: paisagem → estilo → companhia → **prazo → orçamento** → época
+  (o prazo vem antes porque o orçamento é calculado a partir dele);
 - cada nó tem N variantes (`when: (answers) => boolean`) + 1 fallback;
   `resolveQuestion()` escolhe a primeira variante compatível com o contexto;
+  `options` pode ser função do contexto para conteúdo calculado;
 - título, tom e **conjunto de opções** mudam (ex.: quem escolheu neve não vê
   "verão" na época do ano; casal vê "orçamento de vocês dois");
+- **as opções de orçamento exibem o custo total médio por pessoa**
+  (`budget-estimates.ts`): custo diário da faixa × fator do destino
+  (neve 1,8× · cidade/montanha 1,1× · campo 0,9×) × dias do prazo —
+  um econômico de fim de semana na praia (~R$ 450–900) é bem diferente de
+  15 dias na neve (~R$ 4.050–8.100);
 - trocar uma resposta anterior **descarta as respostas dos passos seguintes**
   (foram dadas sob outro contexto) — regra implementada no `QuizService`;
 - tudo local e instantâneo (sem chamadas de rede no meio do quiz); a IA entra

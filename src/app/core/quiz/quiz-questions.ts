@@ -1,4 +1,6 @@
-import type { QuizAnswers } from '../models';
+import type { BudgetOption, QuizAnswers } from '../models';
+
+import { estimateBudgetRange, formatBudgetRange } from './budget-estimates';
 
 export interface QuizOption<K extends keyof QuizAnswers = keyof QuizAnswers> {
   value: QuizAnswers[K];
@@ -18,13 +20,16 @@ export interface ResolvedQuizQuestion<K extends keyof QuizAnswers = keyof QuizAn
 /**
  * Variante de uma pergunta. `when` decide se a variante se aplica ao contexto
  * (respostas anteriores); a última variante de cada nó não tem `when` e serve
- * de fallback.
+ * de fallback. `options` pode ser uma função do contexto — usado quando o
+ * conteúdo das opções é calculado (ex.: valores médios de orçamento).
  */
 export interface QuizQuestionVariant<K extends keyof QuizAnswers = keyof QuizAnswers> {
   when?: (answers: Partial<QuizAnswers>) => boolean;
   emoji: string;
   title: string;
-  options: readonly QuizOption<K>[];
+  options:
+    | readonly QuizOption<K>[]
+    | ((answers: Partial<QuizAnswers>) => readonly QuizOption<K>[]);
 }
 
 /** Nó do fluxo adaptativo: uma dimensão do perfil com suas variantes. */
@@ -45,11 +50,32 @@ export function resolveQuestion<K extends keyof QuizAnswers>(
     key: question.key,
     emoji: variant.emoji,
     title: variant.title,
-    options: variant.options,
+    options: typeof variant.options === 'function' ? variant.options(answers) : variant.options,
   };
 }
 
 type Answers = Partial<QuizAnswers>;
+
+const BUDGET_TIERS: ReadonlyArray<{ value: BudgetOption; emoji: string; label: string }> = [
+  { value: 'economico', emoji: '🪙', label: 'Econômico' },
+  { value: 'moderado', emoji: '💵', label: 'Moderado' },
+  { value: 'confortavel', emoji: '💳', label: 'Confortável' },
+  { value: 'luxo', emoji: '💎', label: 'Luxo' },
+];
+
+/**
+ * Opções de orçamento com o custo total médio por pessoa, calculado a partir
+ * da paisagem e do prazo escolhidos nos passos anteriores — um econômico de
+ * fim de semana na praia é bem diferente de 15 dias na neve.
+ */
+function budgetOptions(answers: Answers): readonly QuizOption<'budget'>[] {
+  return BUDGET_TIERS.map((tier) => ({
+    ...tier,
+    description: formatBudgetRange(
+      estimateBudgetRange(tier.value, answers.environment, answers.duration),
+    ),
+  }));
+}
 
 /**
  * Fluxo adaptativo do quiz: a ordem das dimensões é fixa (o modelo de dados
@@ -179,54 +205,6 @@ export const QUIZ_FLOW: readonly AdaptiveQuizQuestion[] = [
     ],
   },
   {
-    key: 'budget',
-    variants: [
-      {
-        when: (a: Answers) => a.company === 'casal',
-        emoji: '💞',
-        title: 'Qual é o orçamento de vocês dois?',
-        options: [
-          { value: 'economico', emoji: '🪙', label: 'Econômico', description: 'Romance não precisa ser caro' },
-          { value: 'moderado', emoji: '💵', label: 'Moderado', description: 'Conforto sem culpa' },
-          { value: 'confortavel', emoji: '💳', label: 'Confortável', description: 'Boas experiências a dois' },
-          { value: 'luxo', emoji: '💎', label: 'Luxo', description: 'Lua de mel o ano todo' },
-        ],
-      },
-      {
-        when: (a: Answers) => a.company === 'familia',
-        emoji: '👨‍👩‍👧‍👦',
-        title: 'Qual é o orçamento da família?',
-        options: [
-          { value: 'economico', emoji: '🪙', label: 'Econômico', description: 'Render para todo mundo' },
-          { value: 'moderado', emoji: '💵', label: 'Moderado', description: 'Conforto para as crianças' },
-          { value: 'confortavel', emoji: '💳', label: 'Confortável', description: 'Estrutura e praticidade' },
-          { value: 'luxo', emoji: '💎', label: 'Luxo', description: 'Férias inesquecíveis' },
-        ],
-      },
-      {
-        when: (a: Answers) => a.company === 'amigos',
-        emoji: '🤑',
-        title: 'Qual é o orçamento da turma?',
-        options: [
-          { value: 'economico', emoji: '🪙', label: 'Econômico', description: 'Mochilão raiz' },
-          { value: 'moderado', emoji: '💵', label: 'Moderado', description: 'Dividir e aproveitar' },
-          { value: 'confortavel', emoji: '💳', label: 'Confortável', description: 'Sem passar aperto' },
-          { value: 'luxo', emoji: '💎', label: 'Luxo', description: 'A viagem da vida' },
-        ],
-      },
-      {
-        emoji: '💰',
-        title: 'Qual orçamento para a sua viagem solo?',
-        options: [
-          { value: 'economico', emoji: '🪙', label: 'Econômico', description: 'Viajar gastando pouco' },
-          { value: 'moderado', emoji: '💵', label: 'Moderado', description: 'Conforto sem exageros' },
-          { value: 'confortavel', emoji: '💳', label: 'Confortável', description: 'Boas experiências' },
-          { value: 'luxo', emoji: '💎', label: 'Luxo', description: 'O melhor de cada lugar' },
-        ],
-      },
-    ],
-  },
-  {
     key: 'duration',
     variants: [
       {
@@ -260,6 +238,34 @@ export const QUIZ_FLOW: readonly AdaptiveQuizQuestion[] = [
           { value: 'ate-15-dias', emoji: '📆', label: 'Até 15 dias', description: 'Sem pressa' },
           { value: 'mais-de-15-dias', emoji: '🌐', label: 'Mais de 15 dias', description: 'Imersão completa' },
         ],
+      },
+    ],
+  },
+  {
+    key: 'budget',
+    variants: [
+      {
+        when: (a: Answers) => a.company === 'casal',
+        emoji: '💞',
+        title: 'Qual é o orçamento de vocês dois?',
+        options: budgetOptions,
+      },
+      {
+        when: (a: Answers) => a.company === 'familia',
+        emoji: '👨‍👩‍👧‍👦',
+        title: 'Qual é o orçamento da família?',
+        options: budgetOptions,
+      },
+      {
+        when: (a: Answers) => a.company === 'amigos',
+        emoji: '🤑',
+        title: 'Qual é o orçamento da turma?',
+        options: budgetOptions,
+      },
+      {
+        emoji: '💰',
+        title: 'Qual orçamento combina com essa viagem?',
+        options: budgetOptions,
       },
     ],
   },

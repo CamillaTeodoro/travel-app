@@ -1,13 +1,14 @@
+import { estimateBudgetRange, formatBudgetRange } from './budget-estimates';
 import { QUIZ_FLOW, resolveQuestion } from './quiz-questions';
 
 describe('QUIZ_FLOW (perguntas adaptativas)', () => {
-  it('possui as 6 dimensões do perfil na ordem do fluxo', () => {
+  it('possui as 6 dimensões do perfil na ordem do fluxo (prazo antes do orçamento)', () => {
     expect(QUIZ_FLOW.map((q) => q.key)).toEqual([
       'environment',
       'travelStyle',
       'company',
-      'budget',
       'duration',
+      'budget',
       'season',
     ]);
   });
@@ -23,10 +24,12 @@ describe('QUIZ_FLOW (perguntas adaptativas)', () => {
     for (const question of QUIZ_FLOW) {
       for (const [index, variant] of question.variants.entries()) {
         const context = `${question.key} variante ${index}`;
-        expect(variant.options.length).withContext(context).toBeGreaterThanOrEqual(2);
-        const values = variant.options.map((option) => option.value);
+        const options =
+          typeof variant.options === 'function' ? variant.options({}) : variant.options;
+        expect(options.length).withContext(context).toBeGreaterThanOrEqual(2);
+        const values = options.map((option) => option.value);
         expect(new Set(values).size).withContext(context).toBe(values.length);
-        for (const option of variant.options) {
+        for (const option of options) {
           expect(option.emoji).withContext(`${context}/${option.value}`).toBeTruthy();
           expect(option.label).withContext(`${context}/${option.value}`).toBeTruthy();
           expect(option.description).withContext(`${context}/${option.value}`).toBeTruthy();
@@ -56,11 +59,41 @@ describe('QUIZ_FLOW (perguntas adaptativas)', () => {
     expect(cidade.title).toContain('cidade');
   });
 
-  it('o orçamento se adapta à companhia', () => {
-    expect(resolveQuestion(QUIZ_FLOW[3], { company: 'casal' }).title).toContain('vocês dois');
-    expect(resolveQuestion(QUIZ_FLOW[3], { company: 'familia' }).title).toContain('família');
-    expect(resolveQuestion(QUIZ_FLOW[3], { company: 'amigos' }).title).toContain('turma');
-    expect(resolveQuestion(QUIZ_FLOW[3], { company: 'sozinho' }).title).toContain('solo');
+  it('o título do orçamento se adapta à companhia', () => {
+    expect(resolveQuestion(QUIZ_FLOW[4], { company: 'casal' }).title).toContain('vocês dois');
+    expect(resolveQuestion(QUIZ_FLOW[4], { company: 'familia' }).title).toContain('família');
+    expect(resolveQuestion(QUIZ_FLOW[4], { company: 'amigos' }).title).toContain('turma');
+  });
+
+  it('as opções de orçamento mostram valores médios em R$ por pessoa', () => {
+    const budget = resolveQuestion(QUIZ_FLOW[4], {
+      environment: 'praia',
+      duration: 'fim-de-semana',
+    });
+    expect(budget.options.length).toBe(4);
+    for (const option of budget.options) {
+      expect(option.description).withContext(option.value).toContain('R$');
+      expect(option.description).withContext(option.value).toContain('por pessoa');
+    }
+  });
+
+  it('os valores do orçamento crescem com o prazo e com o custo do destino', () => {
+    const praiaFds = estimateBudgetRange('economico', 'praia', 'fim-de-semana');
+    const praia15 = estimateBudgetRange('economico', 'praia', 'ate-15-dias');
+    const neve15 = estimateBudgetRange('economico', 'neve', 'ate-15-dias');
+
+    expect(praia15.min).toBeGreaterThan(praiaFds.min);
+    expect(neve15.min).toBeGreaterThan(praia15.min);
+    // econômico de 15 dias na neve custa mais que um fim de semana econômico inteiro na praia
+    expect(neve15.min).toBeGreaterThan(praiaFds.max);
+  });
+
+  it('formata a faixa em BRL legível', () => {
+    const texto = formatBudgetRange({ min: 450, max: 900 });
+    expect(texto).toContain('450');
+    expect(texto).toContain('900');
+    expect(texto).toContain('por pessoa');
+    expect(texto).toContain('R$');
   });
 
   it('quem escolheu neve não vê a opção verão na época do ano', () => {
