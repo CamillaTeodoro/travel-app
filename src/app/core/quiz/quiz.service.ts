@@ -2,7 +2,7 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 
 import { AuthService } from '../auth';
 import type { QuizAnswers } from '../models';
-import { QUIZ_QUESTIONS } from './quiz-questions';
+import { QUIZ_FLOW, resolveQuestion } from './quiz-questions';
 import { QuizRepository } from './quiz.repository';
 
 /**
@@ -14,7 +14,7 @@ export class QuizService {
   private readonly repository = inject(QuizRepository);
   private readonly auth = inject(AuthService);
 
-  readonly questions = QUIZ_QUESTIONS;
+  readonly questions = QUIZ_FLOW;
 
   private readonly stepIndex = signal(0);
   private readonly answers = signal<Partial<QuizAnswers>>({});
@@ -24,7 +24,14 @@ export class QuizService {
 
   readonly totalSteps = this.questions.length;
   readonly currentStep = computed(() => this.stepIndex() + 1);
-  readonly currentQuestion = computed(() => this.questions[this.stepIndex()]);
+
+  /**
+   * Pergunta do passo atual, com a variante (título/tom/opções) resolvida a
+   * partir das respostas anteriores — é isso que torna o quiz adaptativo.
+   */
+  readonly currentQuestion = computed(() =>
+    resolveQuestion(this.questions[this.stepIndex()], this.answers()),
+  );
   readonly isFirstStep = computed(() => this.stepIndex() === 0);
   readonly isLastStep = computed(() => this.stepIndex() === this.totalSteps - 1);
 
@@ -38,9 +45,26 @@ export class QuizService {
 
   readonly canAdvance = computed(() => this.currentAnswer() !== undefined);
 
+  /**
+   * Registra a resposta do passo atual. Se uma resposta anterior for TROCADA,
+   * as respostas dos passos seguintes são descartadas — elas foram dadas sob
+   * outro contexto e as próximas perguntas serão outras.
+   */
   selectAnswer(value: QuizAnswers[keyof QuizAnswers]): void {
     const key = this.currentQuestion().key;
-    this.answers.update((answers) => ({ ...answers, [key]: value }));
+    this.answers.update((answers) => {
+      if (answers[key] === value) {
+        return answers;
+      }
+      const kept: Partial<QuizAnswers> = {};
+      for (let i = 0; i < this.stepIndex(); i++) {
+        const previousKey = this.questions[i].key;
+        if (answers[previousKey] !== undefined) {
+          kept[previousKey] = answers[previousKey] as never;
+        }
+      }
+      return { ...kept, [key]: value };
+    });
   }
 
   next(): void {

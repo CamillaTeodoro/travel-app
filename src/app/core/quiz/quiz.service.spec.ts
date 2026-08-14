@@ -73,6 +73,69 @@ describe('QuizService', () => {
     expect(service.currentStep()).toBe(6);
   });
 
+  it('adapta a próxima pergunta à resposta anterior', () => {
+    service.selectAnswer('praia');
+    service.next();
+    expect(service.currentQuestion().key).toBe('travelStyle');
+    expect(service.currentQuestion().title).toContain('praia');
+
+    service.previous();
+    service.selectAnswer('montanha');
+    service.next();
+    expect(service.currentQuestion().title).toContain('montanhas');
+  });
+
+  it('remove o verão da época do ano para quem escolheu neve', () => {
+    service.selectAnswer('neve');
+    service.next();
+    for (let i = 1; i < service.totalSteps - 1; i++) {
+      answerCurrent();
+      service.next();
+    }
+    expect(service.currentQuestion().key).toBe('season');
+    expect(service.currentQuestion().options.map((o) => o.value)).not.toContain('verao');
+  });
+
+  it('trocar uma resposta anterior descarta as respostas dos passos seguintes', () => {
+    for (let i = 0; i < service.totalSteps; i++) {
+      answerCurrent();
+      if (!service.isLastStep()) {
+        service.next();
+      }
+    }
+    expect(service.canAdvance()).toBeTrue();
+
+    for (let i = 0; i < service.totalSteps - 1; i++) {
+      service.previous();
+    }
+    expect(service.currentStep()).toBe(1);
+
+    const other = service.currentQuestion().options[1].value;
+    service.selectAnswer(other);
+    service.next();
+
+    expect(service.currentAnswer()).toBeUndefined();
+    expect(service.canAdvance()).toBeFalse();
+  });
+
+  it('manter a mesma resposta ao voltar preserva as respostas seguintes', () => {
+    for (let i = 0; i < service.totalSteps; i++) {
+      answerCurrent();
+      if (!service.isLastStep()) {
+        service.next();
+      }
+    }
+    for (let i = 0; i < service.totalSteps - 1; i++) {
+      service.previous();
+    }
+
+    service.selectAnswer(service.currentAnswer()!);
+    service.next();
+
+    expect(service.currentAnswer()).toBeDefined();
+    expect(service.canAdvance()).toBeTrue();
+  });
+
   it('reset limpa respostas e volta ao passo 1', () => {
     answerCurrent();
     service.next();
